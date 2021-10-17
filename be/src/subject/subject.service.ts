@@ -1,0 +1,25 @@
+import { ConflictException, Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { CreateSubjectDTO } from './dto/create-subject.dto';
+import { Subject, SubjectDocument } from './schemas/subject.schema';
+
+@Injectable()
+export class SubjectService {
+  constructor(
+    @InjectModel(Subject.name) private subjectModel: Model<SubjectDocument>,
+  ) {}
+
+  async getAll() {
+    return await this.subjectModel.find({});
+  }
+
+  async create(model: CreateSubjectDTO) {
+    const isExist = await this.subjectModel.exists({ code: model.code });
+    if (isExist) {
+      throw new ConflictException();
+    }
+
+    return await new this.subjectModel(model).save();
+  }
+}
