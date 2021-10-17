@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+.btn-toggle.active {
+  @apply bg-green-500;
+}
 .react-datepicker__input-container input {
   @apply w-full px-3 text-base font-medium text-gray-700 placeholder-gray-400 transition border rounded-lg h-9;
 }

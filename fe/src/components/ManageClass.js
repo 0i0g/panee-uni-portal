@@ -6,17 +6,25 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import ReactDatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import ToggleButtonGroup from './ToggleButtonGroup';
+
+const dowClassName =
+  'block p-2 text-base font-medium text-center text-gray-700 transition bg-gray-100 rounded-md cursor-pointer toggle-day-btn hover:bg-green-500 btn-toggle';
+
+const slotClassName =
+  'block p-2 text-base font-medium text-center text-gray-700 transition bg-gray-100 rounded-md cursor-pointer toggle-day-btn hover:bg-green-500 btn-toggle';
 
 const schema = yup.object().shape({
   subject: yup.string().required(),
   className: yup
     .string()
     .matches(
-      /([A-Z0-9]){4,10}/,
+      /^([A-Z0-9]){4,10}$/,
       'Class Name must be uppercase character, digit and has length 4-10'
     ),
   fromDate: yup.date().required(),
   toDate: yup.date().required().min(yup.ref('fromDate')),
+  dow: yup.array().min(1),
 });
 
 const ManageClass = () => {
@@ -39,7 +47,7 @@ const ManageClass = () => {
   }, []);
 
   const submitForm = (data) => {
-    console.log(data);
+    console.log(JSON.stringify(data, null, 4));
   };
 
   return (
@@ -64,6 +72,7 @@ const ManageClass = () => {
                 <Select
                   options={subjectOptions}
                   innerRef={ref}
+                  placeholder="Select subject"
                   value={subjectOptions.find((c) => c.value === value)}
                   onChange={(val) => onChange(val.value)}
                 />
@@ -89,12 +98,15 @@ const ManageClass = () => {
             </p>
           </div>
           <div className="mb-3 form-field">
-            <span>Datepicker fromDate</span>
+            <label className="block mb-1 font-bold text-gray-700">
+              Start Date
+            </label>
             <Controller
               control={control}
               name="fromDate"
               render={({ onChange, onBlur, value }) => (
                 <ReactDatePicker
+                  placeholderText="dd/MM/yyy"
                   onChange={onChange}
                   onBlur={onBlur}
                   selected={value}
@@ -107,11 +119,15 @@ const ManageClass = () => {
             </p>
           </div>
           <div className="mb-3 form-field">
+            <label className="block mb-1 font-bold text-gray-700">
+              End Date
+            </label>
             <Controller
               control={control}
               name="toDate"
               render={({ onChange, onBlur, value }) => (
                 <ReactDatePicker
+                  placeholderText="dd/MM/yyy"
                   onChange={onChange}
                   onBlur={onBlur}
                   selected={value}
@@ -126,55 +142,90 @@ const ManageClass = () => {
         </div>
         {/* end left */}
         {/* right */}
-        <div className="form-field">
-          <label className="block mb-1 font-bold text-gray-700">
-            Day of week
-          </label>
-          <div className="grid grid-cols-2 gap-2 dow">
-            <label className="w-full">
-              <input type="checkbox" className="sr-only" name="dow" value="1" />
-              <span className="block w-full p-2 text-base font-medium text-center text-gray-700 transition bg-gray-100 rounded-md cursor-pointer toggle-day-btn hover:bg-green-500">
-                Monday ✨
-              </span>
+        <div>
+          <div className="mb-3 form-field">
+            <label className="block mb-1 font-bold text-gray-700">
+              Day of week
             </label>
-            <label className="w-full">
-              <input type="checkbox" className="sr-only" name="dow" value="2" />
-              <span className="block w-full p-2 text-base font-medium text-center text-gray-700 transition bg-gray-100 rounded-md cursor-pointer toggle-day-btn hover:bg-green-500">
-                Tuesday 🎉
-              </span>
-            </label>
-            <label className="w-full">
-              <input type="checkbox" className="sr-only" name="dow" value="3" />
-              <span className="block w-full p-2 text-base font-medium text-center text-gray-700 transition bg-gray-100 rounded-md cursor-pointer toggle-day-btn hover:bg-green-500">
-                Wednesday 🎄
-              </span>
-            </label>
-            <label className="w-full">
-              <input type="checkbox" className="sr-only" name="dow" value="4" />
-              <span className="block w-full p-2 text-base font-medium text-center text-gray-700 transition bg-gray-100 rounded-md cursor-pointer toggle-day-btn hover:bg-green-500">
-                Thursday 💊
-              </span>
-            </label>
-            <label className="w-full">
-              <input type="checkbox" className="sr-only" name="dow" value="5" />
-              <span className="block w-full p-2 text-base font-medium text-center text-gray-700 transition bg-gray-100 rounded-md cursor-pointer toggle-day-btn hover:bg-green-500">
-                Friday 🎨
-              </span>
-            </label>
-            <label className="w-full">
-              <input type="checkbox" className="sr-only" name="dow" value="6" />
-              <span className="block w-full p-2 text-base font-medium text-center text-gray-700 transition bg-gray-100 rounded-md cursor-pointer toggle-day-btn hover:bg-green-500">
-                Saturday 🎈
-              </span>
-            </label>
-            <label className="w-full">
-              <input type="checkbox" className="sr-only" name="dow" value="0" />
-              <span className="block w-full p-2 text-base font-medium text-center text-gray-700 transition bg-gray-100 rounded-md cursor-pointer toggle-day-btn hover:bg-green-500">
-                Sunday 🎁
-              </span>
-            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <Controller
+                control={control}
+                name="dow"
+                defaultValue={[]}
+                render={({ onChange, value }) => (
+                  <ToggleButtonGroup value={value} onChange={onChange}>
+                    {(ToggleButton) => (
+                      <>
+                        <ToggleButton className={dowClassName} value="1">
+                          Monday ✨
+                        </ToggleButton>
+                        <ToggleButton className={dowClassName} value="2">
+                          Tuesday 🎉
+                        </ToggleButton>
+                        <ToggleButton className={dowClassName} value="3">
+                          Wednesday 🎄
+                        </ToggleButton>
+                        <ToggleButton className={dowClassName} value="4">
+                          Thursday 💊
+                        </ToggleButton>
+                        <ToggleButton className={dowClassName} value="5">
+                          Friday 🎨
+                        </ToggleButton>
+                        <ToggleButton className={dowClassName} value="6">
+                          Saturday 🎈
+                        </ToggleButton>
+                        <ToggleButton className={dowClassName} value="0">
+                          Sunday 🎁
+                        </ToggleButton>
+                      </>
+                    )}
+                  </ToggleButtonGroup>
+                )}
+              />
+            </div>
+            <p className="block text-sm text-red-500 form-message">
+              {errors.dow?.message}
+            </p>
           </div>
-          <p className="block text-sm text-red-500 form-message"></p>
+          <div className="mb-3 form-field">
+            <label className="block mb-1 font-bold text-gray-700">Slot</label>
+            <div className="grid grid-cols-2 gap-2">
+              <Controller
+                control={control}
+                name="slot"
+                defaultValue={[]}
+                render={({ onChange, value }) => (
+                  <ToggleButtonGroup value={value} onChange={onChange}>
+                    {(ToggleButton) => (
+                      <>
+                        <ToggleButton className={slotClassName} value="1">
+                          Slot 1 🔊 7h 00
+                        </ToggleButton>
+                        <ToggleButton className={slotClassName} value="2">
+                          Slot 2 🔊 7h 00
+                        </ToggleButton>
+                        <ToggleButton className={slotClassName} value="3">
+                          Slot 3 🔊 7h 00
+                        </ToggleButton>
+                        <ToggleButton className={slotClassName} value="4">
+                          Slot 4 🔊 7h 00
+                        </ToggleButton>
+                        <ToggleButton className={slotClassName} value="5">
+                          Slot 5 🔊 7h 00
+                        </ToggleButton>
+                        <ToggleButton className={slotClassName} value="6">
+                          Slot 6 🔊 7h 00
+                        </ToggleButton>
+                      </>
+                    )}
+                  </ToggleButtonGroup>
+                )}
+              />
+            </div>
+            <p className="block text-sm text-red-500 form-message">
+              {errors.dow?.message}
+            </p>
+          </div>
         </div>
         {/* end right */}
       </div>
