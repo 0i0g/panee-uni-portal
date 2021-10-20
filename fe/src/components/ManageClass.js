@@ -16,7 +16,7 @@ const slotClassName =
 
 const schema = yup.object().shape({
   subject: yup.string().required(),
-  className: yup
+  name: yup
     .string()
     .matches(
       /^([A-Z0-9]){4,10}$/,
@@ -25,19 +25,30 @@ const schema = yup.object().shape({
   fromDate: yup.date().required(),
   toDate: yup.date().required().min(yup.ref('fromDate')),
   dow: yup.array().min(1),
+  slots: yup.array().min(1),
 });
 
 const ManageClass = () => {
   const [subjectOptions, setSubjectOptions] = useState([]);
-  const { register, handleSubmit, errors, control } = useForm({
+  const [isUpdate, setIsUpdate] = useState(false);
+  const [formMessage, setFormMessage] = useState([]);
+  const { register, handleSubmit, errors, control, reset } = useForm({
     resolver: yupResolver(schema),
+    defaultValues: {
+      subject: '',
+      name: '',
+      fromDate: new Date(),
+      toDate: new Date(),
+      dow: [],
+      slots: [],
+    },
   });
 
   useEffect(() => {
     const fetchSubjectOptions = async () => {
       axios.get('subject/all').then((res) => {
         const subjects = Array.from(res.data).map((x) => ({
-          value: x.code,
+          value: x._id,
           label: `${x.name} - ${x.code}`,
         }));
         setSubjectOptions(subjects);
@@ -48,6 +59,32 @@ const ManageClass = () => {
 
   const submitForm = (data) => {
     console.log(JSON.stringify(data, null, 4));
+    if (!isUpdate) {
+      create(data);
+    }
+  };
+
+  const create = (data) => {
+    axios
+      .post('class', data)
+      .then((res) => {
+        setFormMessage([`Created class: ${res.data.name}`, 'green-500']);
+        resetForm();
+      })
+      .catch((err) => {
+        setFormMessage([`${err.response.data.message}`, 'red-500']);
+      });
+  };
+
+  const resetForm = () => {
+    reset({
+      subject: '',
+      name: '',
+      fromDate: new Date(),
+      toDate: new Date(),
+      dow: [],
+      slots: [],
+    });
   };
 
   return (
@@ -56,9 +93,7 @@ const ManageClass = () => {
       action="/class"
       method="POST"
       onSubmit={handleSubmit(submitForm)}>
-      {/* form */}
       <div className="grid grid-cols-2 gap-2">
-        {/* left */}
         <div>
           <div className="mb-3 form-field">
             <label className="block mb-1 font-bold text-gray-700">
@@ -90,11 +125,11 @@ const ManageClass = () => {
               className="w-full px-3 text-base font-medium text-gray-700 placeholder-gray-400 transition border rounded-lg h-9"
               type="text"
               placeholder="Ex: SE1304"
-              name="className"
+              name="name"
               ref={register}
             />
             <p className="block text-sm text-red-500 form-message">
-              {errors.className?.message}
+              {errors.name?.message}
             </p>
           </div>
           <div className="mb-3 form-field">
@@ -140,8 +175,6 @@ const ManageClass = () => {
             </p>
           </div>
         </div>
-        {/* end left */}
-        {/* right */}
         <div>
           <div className="mb-3 form-field">
             <label className="block mb-1 font-bold text-gray-700">
@@ -192,7 +225,7 @@ const ManageClass = () => {
             <div className="grid grid-cols-2 gap-2">
               <Controller
                 control={control}
-                name="slot"
+                name="slots"
                 defaultValue={[]}
                 render={({ onChange, value }) => (
                   <ToggleButtonGroup value={value} onChange={onChange}>
@@ -223,30 +256,45 @@ const ManageClass = () => {
               />
             </div>
             <p className="block text-sm text-red-500 form-message">
-              {errors.dow?.message}
+              {errors.slots?.message}
             </p>
           </div>
         </div>
-        {/* end right */}
       </div>
-      <button
-        className="w-full font-extrabold transition bg-green-500 rounded-lg text-indigo-50 hover:bg-green-600 hover:text-indigo-100"
-        type="submit">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="mx-auto w-9 h-9"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M12 4v16m8-8H4"
-          />
-        </svg>
-      </button>
-      {/* end form */}
+      <span
+        className={
+          formMessage[1]
+            ? formMessage[1] +
+              ` bg-white font-bold w-full block rounded-tr-md rounded-br-md p-2 mb-2 border-l-8 border-${formMessage[1]} text-${formMessage[1]}`
+            : ''
+        }>
+        {formMessage[0]}
+      </span>
+      {isUpdate ? (
+        <button
+          className="w-full font-extrabold transition bg-blue-500 rounded-lg text-indigo-50 hover:bg-blue-600 hover:text-indigo-100 h-9"
+          type="submit">
+          Update
+        </button>
+      ) : (
+        <button
+          className="w-full font-extrabold transition bg-green-500 rounded-lg h-9 text-indigo-50 hover:bg-green-600 hover:text-indigo-100"
+          type="submit">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="mx-auto w-9 h-9"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M12 4v16m8-8H4"
+            />
+          </svg>
+        </button>
+      )}
     </form>
   );
 };

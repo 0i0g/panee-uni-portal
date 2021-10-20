@@ -2,7 +2,7 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateSubjectDTO } from './dto/create-subject.dto';
-import { Subject, SubjectDocument } from './schemas/subject.schema';
+import { Subject, SubjectDocument } from './schema/subject.schema';
 
 @Injectable()
 export class SubjectService {

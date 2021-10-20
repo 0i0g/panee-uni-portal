@@ -1,4 +1,4 @@
-import { GoogleData } from '../schemas/google-data';
+import { GoogleData } from '../schema/google-data';
 
 export class AuthUser {
   readonly _id: string;

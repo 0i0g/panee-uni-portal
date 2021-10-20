@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { OAuth2Client } from 'google-auth-library';
 import { CreateUserDTO } from 'src/user/dto/create-user.dto';
-import { GoogleData } from 'src/user/schemas/google-data';
+import { GoogleData } from 'src/user/schema/google-data';
 import { UserService } from 'src/user/user.service';
 
 @Injectable()
