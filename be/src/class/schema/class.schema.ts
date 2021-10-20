@@ -31,6 +31,9 @@ export class Class {
   @Prop()
   toDate: Date;
 
+  @Prop()
+  enrollCode: string;
+
   public constructor(init?: Partial<Class>) {
     Object.assign(this, init);
   }

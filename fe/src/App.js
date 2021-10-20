@@ -32,6 +32,12 @@ const App = () => {
             user={user}
             component={() => <HomePage user={user} setUser={setUser} />}
           />
+          <PrivateRoute
+            path="/class/:className"
+            exact
+            user={user}
+            component={() => <HomePage user={user} setUser={setUser} />}
+          />
           <Route path="/login" exact>
             <LoginPage user={user} setUser={setUser} />
           </Route>

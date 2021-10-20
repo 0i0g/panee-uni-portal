@@ -11,6 +11,9 @@
 .react-datepicker__day--selected {
   @apply bg-green-500;
 }
+.link-active {
+  @apply bg-green-500;
+}
 /* 
 .react-datepicker__tab-loop {
   @apply absolute;

@@ -1,7 +1,18 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Query,
+  Post,
+  Req,
+  UseGuards,
+  Put,
+} from '@nestjs/common';
 import { JwtAuthGuard } from 'src/jwt-auth.guard';
 import { ClassService } from './class.service';
 import { CreateClassDTO } from './dto/create-class.dto';
+import { GetClassDTO } from './dto/get-class.dto';
+import { UpdateClassDTO } from './dto/update-class.dto';
 
 @Controller('class')
 export class ClassController {
@@ -9,9 +20,25 @@ export class ClassController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  async create(@Body() model: CreateClassDTO) {
-    console.log(JSON.stringify(model, null, 2));
+  async create(@Req() req, @Body() model: CreateClassDTO) {
+    return await this.classService.create(req.user._id, model);
+  }
 
-    return await this.classService.create(model);
+  @UseGuards(JwtAuthGuard)
+  @Get('all')
+  async getAllOwnedClass(@Req() req) {
+    return await this.classService.getAllOwnedClassName(req.user._id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  async get(@Query() { name }: GetClassDTO) {
+    return await this.classService.get(name);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put()
+  async update(@Body() model: UpdateClassDTO) {
+    return await this.classService.update(model);
   }
 }

@@ -1,4 +1,5 @@
-export class CreateClassDTO {
+export class UpdateClassDTO {
+  readonly _id: string;
   readonly subject: string;
   readonly name: string;
   readonly fromDate: Date;

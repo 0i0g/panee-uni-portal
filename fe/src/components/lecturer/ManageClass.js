@@ -7,6 +7,7 @@ import * as yup from 'yup';
 import ReactDatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import ToggleButtonGroup from './ToggleButtonGroup';
+import { useParams } from 'react-router';
 
 const dowClassName =
   'block p-2 text-base font-medium text-center text-gray-700 transition bg-gray-100 rounded-md cursor-pointer toggle-day-btn hover:bg-green-500 btn-toggle';
@@ -26,12 +27,14 @@ const schema = yup.object().shape({
   toDate: yup.date().required().min(yup.ref('fromDate')),
   dow: yup.array().min(1),
   slots: yup.array().min(1),
+  enrollCode: yup.string().min(1).max(15),
 });
 
 const ManageClass = () => {
   const [subjectOptions, setSubjectOptions] = useState([]);
-  const [isUpdate, setIsUpdate] = useState(false);
   const [formMessage, setFormMessage] = useState([]);
+  const { className } = useParams();
+  const [classId, setClassId] = useState(null);
   const { register, handleSubmit, errors, control, reset } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
@@ -43,6 +46,28 @@ const ManageClass = () => {
       slots: [],
     },
   });
+
+  useEffect(() => {
+    const loadClass = async () => {
+      if (!className) return;
+      console.log(className);
+      axios
+        .get(`class?name=${className}`)
+        .then((res) => {
+          const data = res.data;
+          setClassId(data._id);
+          reset({
+            ...data,
+            fromDate: new Date(data.fromDate),
+            toDate: new Date(data.toDate),
+          });
+        })
+        .catch((err) => {
+          setFormMessage([`${err.response.data.message}`, 'red-500']);
+        });
+    };
+    loadClass();
+  }, []);
 
   useEffect(() => {
     const fetchSubjectOptions = async () => {
@@ -59,17 +84,33 @@ const ManageClass = () => {
 
   const submitForm = (data) => {
     console.log(JSON.stringify(data, null, 4));
-    if (!isUpdate) {
+    if (!className) {
       create(data);
+    } else {
+      update(data);
     }
   };
 
   const create = (data) => {
+    setFormMessage([]);
     axios
       .post('class', data)
       .then((res) => {
         setFormMessage([`Created class: ${res.data.name}`, 'green-500']);
         resetForm();
+      })
+      .catch((err) => {
+        setFormMessage([`${err.response.data.message}`, 'red-500']);
+      });
+  };
+
+  const update = (data) => {
+    setFormMessage([]);
+    const updateData = { ...data, _id: classId };
+    axios
+      .put('class', updateData)
+      .then((res) => {
+        setFormMessage([`Created class: ${data.name}`, 'green-500']);
       })
       .catch((err) => {
         setFormMessage([`${err.response.data.message}`, 'red-500']);
@@ -85,6 +126,7 @@ const ManageClass = () => {
       dow: [],
       slots: [],
     });
+    setFormMessage([]);
   };
 
   return (
@@ -172,6 +214,20 @@ const ManageClass = () => {
             />
             <p className="block text-sm text-red-500 form-message">
               {errors.toDate?.message}
+            </p>
+          </div>
+          <div className="mb-3 form-field">
+            <label className="block mb-1 font-bold text-gray-700">
+              Enroll Code
+            </label>
+            <input
+              className="w-full px-3 text-base font-medium text-gray-700 placeholder-gray-400 transition border rounded-lg h-9"
+              type="password"
+              name="enrollCode"
+              ref={register}
+            />
+            <p className="block text-sm text-red-500 form-message">
+              {errors.enrollCode?.message}
             </p>
           </div>
         </div>
@@ -270,7 +326,7 @@ const ManageClass = () => {
         }>
         {formMessage[0]}
       </span>
-      {isUpdate ? (
+      {className ? (
         <button
           className="w-full font-extrabold transition bg-blue-500 rounded-lg text-indigo-50 hover:bg-blue-600 hover:text-indigo-100 h-9"
           type="submit">

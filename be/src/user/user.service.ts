@@ -31,7 +31,6 @@ export class UserService {
 
   async setRole(model: UpdateUserRole) {
     const roles = Object.keys(Role).map((x) => Role[x]);
-    console.log(roles);
     if (!roles.includes(model.role)) {
       const rolesStr = roles.map((x) => `'${x}'`).join(', ');
       throw new UnprocessableEntityException(`Role must be [${rolesStr}]`);
