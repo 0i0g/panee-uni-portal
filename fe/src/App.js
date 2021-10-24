@@ -43,6 +43,7 @@ const App = () => {
           </Route>
         </Switch>
       </BrowserRouter>
+      <div className="mt-10"></div>
     </div>
   );
 };

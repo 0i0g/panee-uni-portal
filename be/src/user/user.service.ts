@@ -14,11 +14,7 @@ import { AuthUser } from './dto/auth-user';
 
 @Injectable()
 export class UserService {
-  private client: OAuth2Client;
-
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {
-    this.client = new OAuth2Client(process.env.CLIENT_ID);
-  }
+  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
   async create(model: CreateUserDTO) {
     const user = new this.userModel(model);

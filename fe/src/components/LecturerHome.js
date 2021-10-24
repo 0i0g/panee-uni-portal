@@ -2,14 +2,19 @@ import { Link } from 'react-router-dom';
 import Attendance from './lecturer/Attendance';
 import ManageClass from './lecturer/ManageClass';
 import ClassList from './lecturer/ClassList';
+import { useState } from 'react';
 
 const LecturerHome = () => {
+  const [loadClassList, setLoadClassList] = useState(false);
   return (
     <div>
       <div className="bg-indigo-400 rounded-lg managa-class">
         <div className="grid grid-cols-3 gap-2">
           <div className="col-span-2">
-            <ManageClass />
+            <ManageClass
+              setLoadClassList={setLoadClassList}
+              loadClassList={loadClassList}
+            />
           </div>
           <div className="min-h-0 p-4 overflow-y-auto bg-indigo-100 rounded-md srollbar-custom">
             <div className="text-center">
@@ -19,11 +24,11 @@ const LecturerHome = () => {
                 </button>
               </Link>
             </div>
-            <ClassList />
+            <ClassList load={loadClassList} />
           </div>
         </div>
       </div>
-      <Attendance />
+      <Attendance className="mt-3" />
     </div>
   );
 };

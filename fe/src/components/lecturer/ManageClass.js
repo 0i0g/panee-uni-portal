@@ -8,6 +8,7 @@ import ReactDatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import ToggleButtonGroup from './ToggleButtonGroup';
 import { useParams } from 'react-router';
+import { withRouter } from 'react-router-dom';
 
 const dowClassName =
   'block p-2 text-base font-medium text-center text-gray-700 transition bg-gray-100 rounded-md cursor-pointer toggle-day-btn hover:bg-green-500 btn-toggle';
@@ -30,9 +31,9 @@ const schema = yup.object().shape({
   enrollCode: yup.string().min(1).max(15),
 });
 
-const ManageClass = () => {
+const ManageClass = ({ setLoadClassList, loadClassList, history }) => {
   const [subjectOptions, setSubjectOptions] = useState([]);
-  const [formMessage, setFormMessage] = useState([]);
+  const [formMessage, setFormMessage] = useState(null);
   const { className } = useParams();
   const [classId, setClassId] = useState(null);
   const { register, handleSubmit, errors, control, reset } = useForm({
@@ -67,7 +68,7 @@ const ManageClass = () => {
         });
     };
     loadClass();
-  }, []);
+  }, [className]);
 
   useEffect(() => {
     const fetchSubjectOptions = async () => {
@@ -92,11 +93,12 @@ const ManageClass = () => {
   };
 
   const create = (data) => {
-    setFormMessage([]);
+    setFormMessage(null);
     axios
       .post('class', data)
       .then((res) => {
         setFormMessage([`Created class: ${res.data.name}`, 'green-500']);
+        setLoadClassList(!loadClassList);
         resetForm();
       })
       .catch((err) => {
@@ -105,15 +107,17 @@ const ManageClass = () => {
   };
 
   const update = (data) => {
-    setFormMessage([]);
+    setFormMessage(null);
     const updateData = { ...data, _id: classId };
     axios
       .put('class', updateData)
       .then((res) => {
-        setFormMessage([`Created class: ${data.name}`, 'green-500']);
+        setFormMessage([`Updated class: ${data.name}`, 'green-500']);
+        setLoadClassList(!loadClassList);
+        history.push(`${data.name}`);
       })
       .catch((err) => {
-        setFormMessage([`${err.response.data.message}`, 'red-500']);
+        setFormMessage([`${err.response?.data.message}`, 'red-500']);
       });
   };
 
@@ -126,7 +130,6 @@ const ManageClass = () => {
       dow: [],
       slots: [],
     });
-    setFormMessage([]);
   };
 
   return (
@@ -317,15 +320,14 @@ const ManageClass = () => {
           </div>
         </div>
       </div>
-      <span
-        className={
-          formMessage[1]
-            ? formMessage[1] +
-              ` bg-white font-bold w-full block rounded-tr-md rounded-br-md p-2 mb-2 border-l-8 border-${formMessage[1]} text-${formMessage[1]}`
-            : ''
-        }>
-        {formMessage[0]}
-      </span>
+      {formMessage ? (
+        <span
+          className={`bg-white font-bold w-full block rounded-tr-md rounded-br-md p-2 mb-2 border-l-8 border-${formMessage[1]} text-${formMessage[1]}`}>
+          {formMessage[0]}
+        </span>
+      ) : (
+        ''
+      )}
       {className ? (
         <button
           className="w-full font-extrabold transition bg-blue-500 rounded-lg text-indigo-50 hover:bg-blue-600 hover:text-indigo-100 h-9"
@@ -355,4 +357,4 @@ const ManageClass = () => {
   );
 };
 
-export default ManageClass;
+export default withRouter(ManageClass);

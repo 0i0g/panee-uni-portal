@@ -13,6 +13,8 @@ import { ClassService } from './class.service';
 import { CreateClassDTO } from './dto/create-class.dto';
 import { GetClassDTO } from './dto/get-class.dto';
 import { UpdateClassDTO } from './dto/update-class.dto';
+import { SearchDTO } from './dto/search.dto';
+import { EnrollClassDTO } from './dto/enroll-class.dto';
 
 @Controller('class')
 export class ClassController {
@@ -40,5 +42,33 @@ export class ClassController {
   @Put()
   async update(@Body() model: UpdateClassDTO) {
     return await this.classService.update(model);
+  }
+
+  @Get('search')
+  async search(@Query() { keyword }: SearchDTO) {
+    return await this.classService.search(keyword);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('enroll')
+  async enroll(@Req() req, @Body() model: EnrollClassDTO) {
+    return await this.classService.enroll(req.user._id, model);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('enrolled')
+  async getEnrolled(@Req() req) {
+    return await this.classService.getEnrolled(req.user._id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('today')
+  async getClassToday(@Req() req) {
+    return await this.classService.getClassToday(req.user._id);
+  }
+
+  @Get('getSlotsByClassNameAndDate')
+  async getSlotsByClassNameAndDate(@Query() { className, date }) {
+    return await this.classService.getSlotsByClassNameAndDate(className, date);
   }
 }
