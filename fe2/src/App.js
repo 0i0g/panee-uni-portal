@@ -29,8 +29,8 @@ const App = () => {
               roles={Role.lecturer}
               component={ManageClassPage}
             />
-            <PrivateRoute path="*" component={PageNotFound} />
             <Route path="/login" component={LoginPage} />
+            <Route path="*" component={PageNotFound} />
           </Switch>
         </Router>
         <div className="mt-10"></div>

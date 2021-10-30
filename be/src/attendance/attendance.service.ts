@@ -1,11 +1,12 @@
-import { ClassDocument } from './../class/schema/class.schema';
+import { NotFoundError } from 'rxjs';
+import { Class, ClassDocument } from './../class/schema/class.schema';
 import { SubjectDocument } from './../subject/schema/subject.schema';
 import { SubjectService } from './../subject/subject.service';
 import { ClassService } from './../class/class.service';
 import { ClassData } from './schema/class-data.schema';
 import { SubjectData } from './schema/subject-data.schema';
 import { getLastMidNight } from './../helper/datetime-helper';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import moment from 'moment';
 import { Model } from 'mongoose';
@@ -18,22 +19,21 @@ export class AttendanceService {
     @InjectModel(Attendance.name)
     private attendanceModel: Model<AttendanceDocument>,
     private classService: ClassService,
-    private subjectService: SubjectService,
   ) {}
 
   async checkIn(
     listStudentId: string[],
-    classId: string,
+    className: string,
     date: Date,
     slot: number,
   ) {
     // get date at mid night to save into db
     const _date = getLastMidNight(date);
 
-    // get class and subject
-    const classE = await this.classService
-      .findOne({ _id: classId })
-      .populate('subject', '_id');
+    // get class document
+    const classE = await this.classService.findOne({ name: className });
+
+    if (!classE) throw new NotFoundException();
 
     // find current attendance
     let attendance = await this.attendanceModel.findOne({
@@ -41,60 +41,49 @@ export class AttendanceService {
       slot,
     });
 
+    console.log(`attendance ${attendance}`);
+
     if (!attendance) {
       // create new attendance if not exist
       attendance = new this.attendanceModel(
         new Attendance({
           date: _date,
           slot,
-          subjectData: [],
         }),
       );
     }
 
-    if (
-      attendance.subjectData.filter(
-        (x) =>
-          (x.subject as SubjectDocument)._id?.toString() ===
-          (classE.subject as SubjectDocument)._id?.toString(),
-      ).length === 0
-    ) {
-      // create new subject data if not exist
-      attendance.subjectData.push(
-        new SubjectData({
-          subject: (classE.subject as SubjectDocument)._id,
-          classData: [],
-        }),
-      );
-    }
-
-    // find current subject
-    const subjectDataE = attendance.subjectData.find(
-      (x) =>
-        (x.subject as SubjectDocument)._id?.toString() ===
-        (classE.subject as SubjectDocument)._id?.toString(),
+    // find current class
+    let classData = attendance.classData.find(
+      (x) => x.class?.toString() === classE._id.toString(),
     );
 
-    if (
-      subjectDataE.classData.filter(
-        (x) => (x.class as ClassDocument)._id?.toString() === classId,
-      ).length === 0
-    ) {
+    console.log(`classData ${classData}`);
+
+    if (!classData) {
       // create new class if not exist
-      subjectDataE.classData.push(
-        new ClassData({
-          class: new Types.ObjectId(classId) as any,
-          attended: [],
-        }),
-      );
-      console.log(JSON.stringify(subjectDataE, null, 2));
+      classData = new ClassData({ class: classE._id as any });
+      attendance.classData.push(classData);
     }
 
-    // find current class and update attended
-    subjectDataE.classData.find(
-      (x) => (x.class as ClassDocument)._id?.toString() == classId,
-    ).attended = [...(listStudentId as any)];
+    // update attended
+    classData.attended = [...(listStudentId as any)];
 
-    return await attendance.save();
+    return (await attendance.update(attendance)).modifiedCount > 0;
+  }
+
+  async getAttended(className: string, date: Date, slot: number) {
+    const attendance = await this.attendanceModel
+      .findOne({
+        date: getLastMidNight(date),
+        slot,
+      })
+      .populate('classData.class', '_id name', 'Class');
+
+    if (!attendance) return [];
+
+    // return only attended
+    return attendance?.classData.find((x) => x.class.name === className)
+      .attended;
   }
 }

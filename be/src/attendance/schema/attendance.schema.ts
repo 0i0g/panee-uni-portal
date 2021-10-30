@@ -1,3 +1,4 @@
+import { ClassData } from './class-data.schema';
 import { SubjectData } from './subject-data.schema';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
@@ -11,8 +12,8 @@ export class Attendance {
   @Prop()
   slot: number;
 
-  @Prop({ type: SubjectData, default: [] })
-  subjectData: SubjectData[];
+  @Prop({ type: ClassData, default: [] })
+  classData: ClassData[];
 
   public constructor(init?: Partial<Attendance>) {
     Object.assign(this, init);

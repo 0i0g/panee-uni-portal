@@ -3,13 +3,8 @@
 @tailwind components;
 @tailwind utilities;
 
+/* custome */
 .btn-toggle.active {
-  @apply bg-green-500;
-}
-.react-datepicker__input-container input {
-  @apply w-full px-3 text-base font-medium text-gray-700 placeholder-gray-400 transition border rounded-lg h-9;
-}
-.react-datepicker__day--selected {
   @apply bg-green-500;
 }
 .link-active {
@@ -24,6 +19,29 @@
 .checkbox {
   @apply cursor-pointer;
 }
+
+/* date picker */
+.react-datepicker__input-container input {
+  @apply w-full px-3 text-base font-medium text-gray-700 placeholder-gray-400 transition border rounded-lg h-9;
+}
+.react-datepicker__day--selected {
+  @apply bg-green-500;
+}
+
+/* modal */
+.ReactModal__Overlay {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.ReactModal__Overlay--after-open {
+  opacity: 1;
+}
+
+.ReactModal__Overlay--before-close {
+  opacity: 0;
+}
+
 /* 
 .react-datepicker__tab-loop {
   @apply absolute;

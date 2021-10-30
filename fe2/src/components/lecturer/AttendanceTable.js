@@ -2,7 +2,6 @@ import axios from 'axios';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTable } from 'react-table';
 import {
-  Button,
   Table,
   TableBody,
   TableData,
@@ -11,6 +10,7 @@ import {
   TableRow,
 } from '../table/table.components';
 import Loading from '../Loading';
+import swal from 'sweetalert';
 
 const AttendanceTable = ({ nameOfClass, slot, date, className: classN }) => {
   const [listStudent, setListStudent] = useState([]);
@@ -99,21 +99,23 @@ const AttendanceTable = ({ nameOfClass, slot, date, className: classN }) => {
     const fetchStudentInClass = axios.get(
       `class/getStudentInClass?className=${nameOfClass}`
     );
-
-    const fetchAttendance = new Promise((resolve, reject) => {
-      setTimeout(() => {
-        resolve('OK');
-      }, 500);
-    });
+    const fetchAttendance = axios.get(
+      `attendance/getAttended?className=${nameOfClass}&date=${date.toDateString()}&slot=${slot}`
+    );
 
     Promise.all([fetchStudentInClass, fetchAttendance])
       .then((results) => {
+        // set student list in this class
         let students = results[0].data.members;
         students = Array.from(students).map((x, i) => ({
           no: i + 1,
           ...x,
         }));
         setListStudent(students);
+
+        // set attended
+        setListCheckIn(results[1].data);
+
         setLoading(false);
       })
       .catch((err) => {
@@ -131,60 +133,76 @@ const AttendanceTable = ({ nameOfClass, slot, date, className: classN }) => {
     tableInstance;
 
   const doCheckIn = () => {
+    axios
+      .post('attendance/checkin', {
+        listStudentId: listCheckIn,
+        className: nameOfClass,
+        date,
+        slot,
+      })
+      .then((res) => {
+        swal('Check in success', '', 'success');
+        console.log(res.data);
+      })
+      .catch((err) => {
+        swal('Check in failed', err.message, 'error');
+      });
     console.log(listCheckIn);
   };
 
   return loading ? (
     <Loading />
   ) : (
-    <div className={classN}>
-      <Table {...getTableProps()}>
-        <TableHead>
-          {headerGroups.map((headerGroup) => (
-            <TableRow {...headerGroup.getHeaderGroupProps()}>
-              {headerGroup.headers.map((column) => (
-                <TableHeader
-                  {...column.getHeaderProps({
-                    className: column.className,
-                  })}>
-                  {column.render('Header')}
-                </TableHeader>
-              ))}
-            </TableRow>
-          ))}
-        </TableHead>
-        <TableBody {...getTableBodyProps()}>
-          {rows.map((row) => {
-            prepareRow(row);
-            return (
-              <TableRow {...row.getRowProps()}>
-                {row.cells.map((cell, i) => {
-                  let className = '';
-                  if (i === 0) {
-                    className = 'font-bold';
-                  }
-                  if (i === 1) {
-                    className = 'text-lg font-bold text-indigo-500';
-                  }
-                  return (
-                    <TableData {...cell.getCellProps()} className={className}>
-                      {cell.render('Cell')}
-                    </TableData>
-                  );
-                })}
+    <>
+      <div className={classN}>
+        <Table {...getTableProps()}>
+          <TableHead>
+            {headerGroups.map((headerGroup) => (
+              <TableRow {...headerGroup.getHeaderGroupProps()}>
+                {headerGroup.headers.map((column) => (
+                  <TableHeader
+                    {...column.getHeaderProps({
+                      className: column.className,
+                    })}>
+                    {column.render('Header')}
+                  </TableHeader>
+                ))}
               </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-      <div className="flex justify-end w-full mt-3">
-        <button
-          className="right-0 w-20 font-bold text-white bg-green-500 rounded-md h-9 hover:bg-green-600"
-          onClick={doCheckIn}>
-          Save
-        </button>
+            ))}
+          </TableHead>
+          <TableBody {...getTableBodyProps()}>
+            {rows.map((row) => {
+              prepareRow(row);
+              return (
+                <TableRow {...row.getRowProps()}>
+                  {row.cells.map((cell, i) => {
+                    let className = '';
+                    if (i === 0) {
+                      className = 'font-bold';
+                    }
+                    if (i === 1) {
+                      className = 'text-lg font-bold text-indigo-500';
+                    }
+                    return (
+                      <TableData {...cell.getCellProps()} className={className}>
+                        {cell.render('Cell')}
+                      </TableData>
+                    );
+                  })}
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+        <div className="flex justify-end w-full mt-3">
+          <button
+            className="right-0 w-20 font-bold text-white bg-green-500 rounded-md h-9 hover:bg-green-600"
+            onClick={doCheckIn}>
+            Save
+          </button>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

@@ -17,7 +17,7 @@ const LoginPage = ({ history }) => {
   return (
     <div className="flex items-center justify-center h-screen">
       <div>
-        <p class="font-mono text-4xl font-bold leading-10 text-transparent  sm:text-5xl sm:leading-none md:text-6xl bg-clip-text bg-gradient-to-br from-indigo-400 to-indigo-600">
+        <p className="font-mono text-4xl font-bold leading-10 text-transparent sm:text-5xl sm:leading-none md:text-6xl bg-clip-text bg-gradient-to-br from-indigo-400 to-indigo-600">
           {process.env.REACT_APP_LOGO}
         </p>
         <GoogleLogin

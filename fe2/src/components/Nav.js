@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import authService from '../services/auth.service';
 
 const Nav = ({ history }) => {
@@ -19,18 +20,23 @@ const Nav = ({ history }) => {
           <img src={user?.picture} alt="logo" className="h-16 rounded-full" />
         </div>
       </div>
-      <div className="flex flex-row justify-end px-3 py-1 bg-gray-200 rounded-md">
-        <span className="inline-flex px-2 py-1 text-xs font-bold leading-none text-white bg-yellow-500 rounded-full ">
-          {user?.role}
-        </span>
-        <span className="inline-flex px-2 py-1 ml-2 text-xs font-bold leading-none text-white bg-green-400 rounded-full ">
-          {user?.email}
-        </span>
-        <button
-          className="inline-flex px-2 py-1 ml-2 text-xs font-bold leading-none text-white transition bg-gray-400 rounded-full hover:bg-gray-600"
-          onClick={logout}>
-          logout
-        </button>
+      <div className="flex flex-row justify-between px-3 py-1 bg-gray-200 rounded-md">
+        <div>
+          <Link to="/manageclass"></Link>
+        </div>
+        <div>
+          <span className="inline-flex px-2 py-1 text-xs font-bold leading-none text-white bg-yellow-500 rounded-full ">
+            {user?.role}
+          </span>
+          <span className="inline-flex px-2 py-1 ml-2 text-xs font-bold leading-none text-white bg-green-400 rounded-full ">
+            {user?.email}
+          </span>
+          <button
+            className="inline-flex px-2 py-1 ml-2 text-xs font-bold leading-none text-white transition bg-gray-400 rounded-full hover:bg-gray-600"
+            onClick={logout}>
+            logout
+          </button>
+        </div>{' '}
       </div>
     </div>
   );
