@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as moment from 'moment';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import { NotFoundError } from 'rxjs';
 import { getLastMidNight } from 'src/helper/datetime-helper';
 import { CreateClassDTO } from './dto/create-class.dto';
@@ -19,6 +19,10 @@ export class ClassService {
   constructor(
     @InjectModel(Class.name) private classModel: Model<ClassDocument>,
   ) {}
+
+  findOne(filter: FilterQuery<ClassDocument>) {
+    return this.classModel.findOne(filter);
+  }
 
   async create(userId: string, model: CreateClassDTO) {
     const isExist = await this.classModel.exists({ name: model.name });
@@ -106,23 +110,58 @@ export class ClassService {
     return classes;
   }
 
-  async getSlotsByClassNameAndDate(className: string, date: Date) {
+  // async getSlotsByClassNameAndDate(className: string, date: Date) {
+  //   const lastMidNight = getLastMidNight(date);
+  //   const dow = lastMidNight.getDay().toString();
+
+  //   const classE = await this.classModel
+  //     .where({
+  //       fromDate: { $lte: lastMidNight },
+  //       toDate: { $gte: lastMidNight },
+  //       name: className,
+  //       dow,
+  //     })
+  //     .select('slots members')
+  //     .populate('members', 'googleData.name')
+  //     .findOne();
+
+  //   if (!classE) throw new NotFoundException();
+
+  //   return classE;
+  // }
+
+  async getLeturerSlots(date: Date) {
     const lastMidNight = getLastMidNight(date);
     const dow = lastMidNight.getDay().toString();
 
-    const classE = await this.classModel
+    const classes = await this.classModel
       .where({
         fromDate: { $lte: lastMidNight },
         toDate: { $gte: lastMidNight },
-        name: className,
         dow,
       })
-      .select('slots members')
-      .populate('members', 'googleData.name')
-      .findOne();
+      .select('slots name')
+      .populate('subject', 'name');
 
-    if (!classE) throw new NotFoundException();
+    const slots = [];
+    classes.map((x) =>
+      x.slots.map((y) =>
+        slots.push({
+          class: { id: x._id, name: x.name },
+          subject: x.subject.name,
+          slot: +y,
+        }),
+      ),
+    );
 
-    return classE;
+    slots.sort((x, y) => x.slot - y.slot);
+
+    return slots;
+  }
+
+  async getStudentInClass(className: string) {
+    return await this.classModel
+      .findOne({ name: className })
+      .populate('members', 'googleData');
   }
 }

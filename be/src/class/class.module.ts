@@ -10,5 +10,6 @@ import { Class, ClassSchema } from './schema/class.schema';
   ],
   providers: [ClassService],
   controllers: [ClassController],
+  exports: [ClassService],
 })
 export class ClassModule {}

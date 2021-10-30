@@ -67,8 +67,18 @@ export class ClassController {
     return await this.classService.getClassToday(req.user._id);
   }
 
-  @Get('getSlotsByClassNameAndDate')
-  async getSlotsByClassNameAndDate(@Query() { className, date }) {
-    return await this.classService.getSlotsByClassNameAndDate(className, date);
+  // @Get('getSlotsByClassNameAndDate')
+  // async getSlotsByClassNameAndDate(@Query() { className, date }) {
+  //   return await this.classService.getSlotsByClassNameAndDate(className, date);
+  // }
+
+  @Get('getLeturerSlots')
+  async getLeturerSlots(@Query() { date }) {
+    return await this.classService.getLeturerSlots(date);
+  }
+
+  @Get('getStudentInClass')
+  async getStudentInClass(@Query() { className }) {
+    return await this.classService.getStudentInClass(className);
   }
 }

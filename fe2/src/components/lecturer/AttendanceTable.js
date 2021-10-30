@@ -1,6 +1,8 @@
-import React, { useMemo, useState } from 'react';
+import axios from 'axios';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTable } from 'react-table';
 import {
+  Button,
   Table,
   TableBody,
   TableData,
@@ -8,10 +10,16 @@ import {
   TableHeader,
   TableRow,
 } from '../table/table.components';
+import Loading from '../Loading';
 
-const AttendanceTable = ({ data, className: classN, slot }) => {
-  const [listCheckIn, setListCheckIn] = useState(['616b82f1a9d135f03b2c113d']);
-  const initialStateTable = { hiddenColumns: ['id'] };
+const AttendanceTable = ({ nameOfClass, slot, date, className: classN }) => {
+  const [listStudent, setListStudent] = useState([]);
+  const [error, setError] = useState(null);
+  const [listCheckIn, setListCheckIn] = useState([]); // save list checked
+  const [loading, setLoading] = useState(true);
+
+  // table setup
+  const initialStateTable = { hiddenColumns: ['_id'] };
   const columns = useMemo(
     () => [
       {
@@ -21,37 +29,28 @@ const AttendanceTable = ({ data, className: classN, slot }) => {
       },
       {
         Header: 'Name',
-        accessor: 'name',
+        accessor: 'googleData.name',
       },
       {
         Header: 'ID',
-        accessor: 'id',
-        show: false,
+        accessor: '_id',
       },
     ],
     [listCheckIn]
   );
 
-  const getRestData = (data) =>
-    Array.from(data.members).map((user, i) => ({
-      no: i + 1,
-      name: user.googleData.name,
-      id: user._id,
-    }));
-
+  //TODO fix first check not working
   const SelectAll = () => {
-    console.log('render');
-    console.log(listCheckIn.length);
     return (
       <input
         type="checkbox"
-        className="zoom15"
+        className="zoom15 checkbox"
         defaultChecked={listCheckIn.length > 0}
         onChange={(event) => {
           if (listCheckIn.length > 0) {
             setListCheckIn([]);
           } else {
-            setListCheckIn(getRestData(data).map((x) => x.id));
+            setListCheckIn(listStudent.map((x) => x._id));
           }
         }}
       />
@@ -70,17 +69,16 @@ const AttendanceTable = ({ data, className: classN, slot }) => {
             <div className="w-full h-full">
               <input
                 type="checkbox"
-                className="zoom15"
-                defaultChecked={listCheckIn.includes(row.values.id)}
+                className="zoom15 checkbox"
+                defaultChecked={listCheckIn.includes(row.values._id)}
                 onChange={(event) => {
                   if (event.target.checked) {
                     setListCheckIn((prev) => {
-                      console.log([...prev, row.values.id]);
-                      return [...prev, row.values.id];
+                      return [...prev, row.values._id];
                     });
                   } else {
                     setListCheckIn((prev) =>
-                      prev.filter((x) => x != row.values.id)
+                      prev.filter((x) => x != row.values._id)
                     );
                   }
                 }}
@@ -92,16 +90,53 @@ const AttendanceTable = ({ data, className: classN, slot }) => {
     ]);
   };
 
-  const tableDate = useMemo(() => getRestData(data), [data]);
+  const tableDate = useMemo(() => {
+    return listStudent;
+  }, [listStudent]);
+
+  // fetch data
+  useEffect(() => {
+    const fetchStudentInClass = axios.get(
+      `class/getStudentInClass?className=${nameOfClass}`
+    );
+
+    const fetchAttendance = new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve('OK');
+      }, 500);
+    });
+
+    Promise.all([fetchStudentInClass, fetchAttendance])
+      .then((results) => {
+        let students = results[0].data.members;
+        students = Array.from(students).map((x, i) => ({
+          no: i + 1,
+          ...x,
+        }));
+        setListStudent(students);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError('Cannot load attendance');
+        console.log(err);
+      });
+  }, [nameOfClass, slot, date]);
 
   const tableInstance = useTable(
     { columns, data: tableDate, initialState: initialStateTable },
     checkInAction
   );
+
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
     tableInstance;
 
-  return (
+  const doCheckIn = () => {
+    console.log(listCheckIn);
+  };
+
+  return loading ? (
+    <Loading />
+  ) : (
     <div className={classN}>
       <Table {...getTableProps()}>
         <TableHead>
@@ -128,6 +163,9 @@ const AttendanceTable = ({ data, className: classN, slot }) => {
                   if (i === 0) {
                     className = 'font-bold';
                   }
+                  if (i === 1) {
+                    className = 'text-lg font-bold text-indigo-500';
+                  }
                   return (
                     <TableData {...cell.getCellProps()} className={className}>
                       {cell.render('Cell')}
@@ -140,7 +178,9 @@ const AttendanceTable = ({ data, className: classN, slot }) => {
         </TableBody>
       </Table>
       <div className="flex justify-end w-full mt-3">
-        <button className="right-0 w-20 font-bold text-white bg-green-500 rounded-md h-9 hover:bg-green-600">
+        <button
+          className="right-0 w-20 font-bold text-white bg-green-500 rounded-md h-9 hover:bg-green-600"
+          onClick={doCheckIn}>
           Save
         </button>
       </div>
@@ -149,9 +189,3 @@ const AttendanceTable = ({ data, className: classN, slot }) => {
 };
 
 export default AttendanceTable;
-
-/**
- * TODO
- * send check in
- * fetch checked in
- */
