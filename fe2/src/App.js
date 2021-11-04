@@ -15,17 +15,15 @@ const App = () => {
         <Router>
           <Switch>
             <PrivateRoute exact path="/" component={HomePage} />
-            <PrivateRoute
-              path="/checkin/:paramClassName/:paramSlot"
-              component={HomePage}
-            />
+            <PrivateRoute path="/checkin" component={HomePage} />
             <PrivateRoute
               path="/manageclass"
+              exact
               roles={Role.lecturer}
               component={ManageClassPage}
             />
             <PrivateRoute
-              path="/manageclass?className"
+              path="/manageclass/:className"
               roles={Role.lecturer}
               component={ManageClassPage}
             />

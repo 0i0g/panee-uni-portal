@@ -1,13 +1,26 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import authService from '../services/auth.service';
+import { Role } from '../helpers/constants';
 
 const Nav = ({ history }) => {
+  const { pathname } = history.location;
   const user = authService.getCurrentUser();
 
   const logout = () => {
     authService.logout();
     history.push('/login');
+  };
+
+  const linkClassName = (path) => {
+    const clsN =
+      'mr-5 font-bold text-gray-500 hover:text-gray-700 ease-in link';
+
+    if (path === '/') {
+      return pathname === path ? clsN + ' link-active-color ' : clsN;
+    }
+
+    return pathname.startsWith(path) ? clsN + ' link-active-color ' : clsN;
   };
 
   return (
@@ -21,8 +34,19 @@ const Nav = ({ history }) => {
         </div>
       </div>
       <div className="flex flex-row justify-between px-3 py-1 bg-gray-200 rounded-md">
-        <div>
-          <Link to="/manageclass"></Link>
+        <div className="flex">
+          {authService.isRole(Role.lecturer) ? (
+            <>
+              <Link to="/" className={linkClassName('/')}>
+                <p>Check in</p>
+              </Link>
+              <Link to="/manageclass" className={linkClassName('/manageclass')}>
+                <p>Manage Class</p>
+              </Link>
+            </>
+          ) : (
+            ''
+          )}
         </div>
         <div>
           <span className="inline-flex px-2 py-1 text-xs font-bold leading-none text-white bg-yellow-500 rounded-full ">

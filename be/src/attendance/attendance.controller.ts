@@ -6,7 +6,10 @@ import {
   UnauthorizedException,
   Get,
   Query,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/jwt-auth.guard';
 
 @Controller('attendance')
 export class AttendanceController {
@@ -25,5 +28,14 @@ export class AttendanceController {
   @Get('getAttended')
   async getAttended(@Query() { className, date, slot }) {
     return await this.attendanceService.getAttended(className, date, slot);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('studentGetAttendance')
+  async studentGetAttendance(@Req() req, @Query() { date }) {
+    return await this.attendanceService.studentGetAttendance(
+      req.user._id,
+      date,
+    );
   }
 }

@@ -4,7 +4,6 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import axios from 'axios';
-import ReactModal from 'react-modal';
 
 axios.defaults.baseURL = 'http://localhost:8080/api/';
 axios.interceptors.request.use((request) => {
@@ -12,8 +11,6 @@ axios.interceptors.request.use((request) => {
   return request;
 });
 //TODO ...interceotors response if 401 redirect to login
-
-ReactModal.setAppElement('#root');
 
 ReactDOM.render(
   <React.StrictMode>

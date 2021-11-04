@@ -5,7 +5,7 @@ import AttendanceTable from '../../components/lecturer/AttendanceTable';
 
 const AttendancePage = () => {
   const [listSlot, setListSlot] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(new Date('2021-10-24'));
+  const [selectedDate, setSelectedDate] = useState(new Date(Date.now()));
   const [selectedClassName, setSelectedClassName] = useState(null);
   const [selectedSlot, setSelectedSlot] = useState(null);
 

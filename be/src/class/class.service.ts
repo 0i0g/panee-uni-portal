@@ -90,11 +90,10 @@ export class ClassService {
   }
 
   async getEnrolled(userId: string) {
-    const classes = await this.classModel.where({ members: { $in: userId } });
-    return classes.map((x) => ({
-      classId: x._id,
-      name: x.name,
-    }));
+    const classes = await this.classModel
+      .where({ members: { $in: userId } })
+      .populate('subject', 'code name');
+    return classes;
   }
 
   // TODO get all class today

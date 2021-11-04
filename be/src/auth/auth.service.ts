@@ -24,7 +24,7 @@ export class AuthService {
       })
       .then((ticket) => ticket)
       .catch((err) => {
-        throw new UnauthorizedException();
+        throw new UnauthorizedException(err);
       });
 
     const payload = ticket.getPayload();

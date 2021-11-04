@@ -39,7 +39,6 @@ const AttendanceTable = ({ nameOfClass, slot, date, className: classN }) => {
     [listCheckIn]
   );
 
-  //TODO fix first check not working
   const SelectAll = () => {
     return (
       <input

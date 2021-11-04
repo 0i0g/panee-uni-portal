@@ -10,6 +10,9 @@
 .link-active {
   @apply bg-green-500;
 }
+.link {
+  @apply transition duration-100;
+}
 .link-active-color {
   @apply text-green-500 hover:text-green-500;
 }
